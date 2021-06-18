@@ -2,14 +2,15 @@
 // Created by roizh on 16/06/2021.
 //
 
-#ifndef vl_vector_H_
-#define vl_vector_H_
+#ifndef _VL_VECTOR_H_
+#define _VL_VECTOR_H_
+#define DEFAULT_STATIC_SIZE 16
 #include <iostream>
 #include <iterator>
 
 
 
-template <typename T, size_t StaticCapacity = 16>
+template <typename T, size_t StaticCapacity = DEFAULT_STATIC_SIZE>
 class vl_vector {
  private:
   size_t _vec_size;
@@ -42,7 +43,7 @@ class vl_vector {
     try{
        new_data = new T[new_capacity];
     }
-    catch (std::bad_alloc)
+    catch (std::bad_alloc&)
       {
         throw;
       }
@@ -402,7 +403,7 @@ class vl_vector {
   iterator erase(const_iterator first,const_iterator last){
     size_t dist_from_first = std::distance (cbegin(), first);
     size_t mark = std::distance (first, last);
-    if ((_vec_size - mark <= StaticCapacity) && is_static == false){
+    if ((_vec_size - mark <= StaticCapacity) && !is_static){
       const_iterator it = cbegin();
       T* cur_ptr = stk_array;
       while(it != first){
@@ -504,9 +505,7 @@ class vl_vector {
    * @return reference to the data[index] element.
    */
   T& operator[](size_t ind)const noexcept{
-    if (ind<_vec_size){
-        return _data[ind];
-    }
+    return _data[ind];
   }
 
   /**
@@ -541,4 +540,4 @@ class vl_vector {
   }
 };
 
-#endif //vl_vector_H_
+#endif //_VL_VECTOR_H_
