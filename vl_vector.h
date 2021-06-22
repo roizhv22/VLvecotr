@@ -303,15 +303,15 @@ class vl_vector {
   /**
    * Additioal insert method that copies a sequance of elemnt represented by
    * two iterators.
-   * @tparam InputIterator An iterator that is STL approved./
+   * @tparam ForwardIterator An iterator that is STL approved./
    * @param position an vector iterator to a giving postion.
    * @param first Input it
    * @param last Input it marking the last (not icnlusive) elemnt to be added.
    * @return iterator to the first new element.
    */
-  template<typename InputIterator>
+  template<typename ForwardIterator>
   iterator insert(const_iterator position,
-                  const InputIterator first, const InputIterator last){
+                  const ForwardIterator first, const ForwardIterator last){
     size_t mark = std::distance (cbegin(), position);
     size_t num_of_elem = std::distance (first, last);
     if (_vec_size+num_of_elem > _vec_capacity){
