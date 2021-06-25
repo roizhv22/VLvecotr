@@ -12,7 +12,7 @@
 
 template <typename T, size_t StaticCapacity = DEFAULT_STATIC_SIZE>
 class vl_vector {
- private:
+ protected:
   size_t _vec_size;
   size_t _vec_capacity;
   T* _data;
@@ -22,18 +22,10 @@ class vl_vector {
   /**
    * CapC method for clacluting vec size changes. This method are only for
    * internal usage.
-   * @param new_elements additioal elemnts to the vector.
+   * @param new_elements additional elemnts to the vector.
    * @return new size by instructions.
    */
-  size_t cap_c(size_t size,size_t new_elements){
-    if(size + new_elements <= StaticCapacity){
-        return StaticCapacity;
-      }
-    else{
-        size_t clac = (3*(size + new_elements)) / 2;
-        return clac;
-      }
-  }
+  size_t cap_c(size_t size,size_t new_elements);
   /**
    * a private method to manage vector size .
    * @param new_capacity the new capacity of the vector.
@@ -69,7 +61,8 @@ class vl_vector {
   /**
    * default ctr.
    */
-  vl_vector(): _vec_size(0), _vec_capacity(StaticCapacity), _data(stk_array),
+  vl_vector(): _vec_size(0), _vec_capacity(StaticCapacity),
+  _data(stk_array),
   is_static(true){}
 
 /**
@@ -78,8 +71,8 @@ class vl_vector {
  * @param first begin of seq
  * @param last end of seq.
  */
-  template<class InputIterator>
-  vl_vector(InputIterator first, InputIterator last)
+  template<class ForwardIterator>
+  vl_vector(ForwardIterator first, ForwardIterator last)
   {
     size_t num_of_elements = std::distance (first, last); //STL algorithm.
     _vec_size = num_of_elements;
@@ -126,7 +119,7 @@ class vl_vector {
    * cpy ctr
    * @param other vec object to copy from.
    */
-  vl_vector(const vl_vector<T,StaticCapacity>& other){
+   vl_vector(const vl_vector<T,StaticCapacity>& other){
     _vec_capacity = other._vec_capacity;
     _vec_size = other._vec_size;
     is_static = true;
@@ -145,7 +138,7 @@ class vl_vector {
   /**
    * dcr, frees memory if the capacity is not the Static capacity.
    */
-  ~vl_vector(){
+  virtual ~vl_vector(){
     if (_vec_capacity > StaticCapacity){
       delete[] _data;
     }
@@ -212,7 +205,7 @@ class vl_vector {
  * size getter
  * @return the current vec size.
  */
-  size_t size() const {return _vec_size;}
+  virtual size_t size() const {return _vec_size;}
   /**
    * capacity getter
    * @return current vec capacity.
@@ -229,18 +222,20 @@ class vl_vector {
    * is vec is empty aka size == 0.
    * @return bool expression on given state.
    */
-  bool empty() const {return _vec_size == 0;}
+  virtual bool empty() const {return _vec_size == 0;}
 
   /**
-   * returning the givning element in the given index in the vector.
+   * returning the giving element in the given index in the vector.
    * @param ind an index.
    * @return the Value of (copy and not reference).
    */
-  T at(const size_t ind) const {
+  T& at(const size_t ind) const {
     if(ind >= _vec_size || ind<0){
         throw std::out_of_range("Out of vector index.");
     }
+    else{
     return _data[ind];
+    }
   }
 
   /**
@@ -248,7 +243,7 @@ class vl_vector {
    * @param val T type.
    * @return bool val if the element in the vector.
    */
-  bool contains (const T& val) const {
+  virtual bool contains (const T& val) const {
     for (size_t i = 0; i < _vec_size; ++i)
       {
         if (val == _data[i]){
@@ -260,10 +255,10 @@ class vl_vector {
   /**
    * push_back() method accepts a Value and pushes it to the end
    * of the vector. if resizing is needed it will call to the increase_vec_size
-   * methodd.
+   * method.
    * @param val T type value.
    */
-  void push_back(T val){
+  virtual void push_back(T val){
     if (_vec_size == _vec_capacity){
       size_t new_cap = cap_c (_vec_size, 1);
         increase_vec_size (new_cap);
@@ -274,7 +269,7 @@ class vl_vector {
 
   /**
    * An insert method. accepting an iterator as a marker in the vector
-   * and a value and will insert it to the left of the giving itartor value.
+   * and a value and will insert it to the left of the giving iterator value.
    * @param it Iterator (T*)
    * @param val T value
    * @return an iterator to the new element.
@@ -301,12 +296,12 @@ class vl_vector {
     return _data+mark;
   }
   /**
-   * Additioal insert method that copies a sequance of elemnt represented by
+   * Additional insert method that copies a sequence of element represented by
    * two iterators.
    * @tparam ForwardIterator An iterator that is STL approved./
-   * @param position an vector iterator to a giving postion.
+   * @param position an vector iterator to a giving position.
    * @param first Input it
-   * @param last Input it marking the last (not icnlusive) elemnt to be added.
+   * @param last Input it marking the last (not inclusive) element to be added.
    * @return iterator to the first new element.
    */
   template<typename ForwardIterator>
@@ -338,7 +333,7 @@ class vl_vector {
   /**
    * Pop_back method removes the last elemnts from the vector.
    */
-  void pop_back(){
+  virtual void pop_back(){
     if(_vec_size == 0){
         return;
     }
@@ -433,17 +428,16 @@ class vl_vector {
     return _data + dist_from_first;
   }
   /**
-   * clear function deletes all elemnts from the vector and returning it's
+   * clear function deletes all elements from the vector and returning it's
    * capacity to the Static capacity that was declared.
    */
-  void clear(){
+  virtual void clear(){
     if(!is_static){
       T* temp = _data;
       _data = stk_array;
       delete[] temp;
       is_static = true;
       _vec_capacity = StaticCapacity;
-      is_static = true;
     }
     _vec_size = 0;
   }
@@ -457,8 +451,8 @@ class vl_vector {
    * @param other A vector<T,StaticCapacity> obejct. passed by const ref.
    * @return A Vector that has the same data as the copied vector.
    */
-  vl_vector<T, StaticCapacity>& operator=(const vl_vector<T,StaticCapacity>&
-      other)
+  virtual vl_vector<T, StaticCapacity>& operator=
+      (const vl_vector<T,StaticCapacity>& other)
   {
     if (this == &other)
       {
@@ -539,5 +533,16 @@ class vl_vector {
     return !(a == b);
   }
 };
+template<typename T, size_t StaticCapacity>
+size_t vl_vector<T, StaticCapacity>::cap_c (size_t size, size_t new_elements)
+{
+  if(size + new_elements <= StaticCapacity){
+      return StaticCapacity;
+    }
+  else{
+      size_t clac = (3*(size + new_elements)) / 2;
+      return clac;
+    }
+}
 
 #endif //_VL_VECTOR_H_
